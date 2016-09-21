@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+ETC_DIR="/etc/yubikey-gpg-ssh-fix"
+HOME_DIR="/home/${SUDO_USER}"
+BACKUP_DIR="${ETC_DIR}/backup/${SUDO_USER}"
+
+case "$1" in
+    install|upgrade)
+        
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+
+#DEBHELPER#
+
+exit 0

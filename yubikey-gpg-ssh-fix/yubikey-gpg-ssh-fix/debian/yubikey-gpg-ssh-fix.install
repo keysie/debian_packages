@@ -1,0 +1,2 @@
+sks-keyservers.netCA.pem etc/yubikey-gpg-ssh-fix
+gpg.conf etc/yubikey-gpg-ssh-fix

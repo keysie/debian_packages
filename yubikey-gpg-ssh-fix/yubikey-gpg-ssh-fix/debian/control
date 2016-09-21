@@ -1,0 +1,14 @@
+Source: yubikey-gpg-ssh-fix
+Section: utils
+Priority: optional
+Maintainer: Robert Simpson (Keysie) <robert_zwilling@web.de>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+#Vcs-Git: git@github.com:keysie/yubikey-gpg-ssh-fix.git
+
+Package: yubikey-gpg-ssh-fix
+Architecture: all
+Depends: pcscd, scdaemon, pcsc-tools, gnupg2, gnupg-curl, openssl, parcimonie
+Description: Use Yubikey NEO for GPG and SSH
+ Tames the GNOME-keyring and enables you to use your Yubikey NEO for GPG
+ and SSH authentication.
