@@ -1,1 +1,5 @@
 *~
+*.dsc
+*.deb
+*.changes
+*.debian.tar.gz
