@@ -3,3 +3,4 @@
 *.deb
 *.changes
 *.debian.tar.gz
+*codeblocks-project
