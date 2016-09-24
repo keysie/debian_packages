@@ -7,18 +7,19 @@ BACKUP_DIR="${ETC_DIR}/backup/${SUDO_USER}"
 
 case "$1" in
     configure)
-    
+
         # create backup folder for user
         mkdir -p "${BACKUP_DIR}"
-        
+
         # backup existing gpg.conf (if any)
         if [ -e "${HOME_DIR}/.gnupg/gpg.conf" ]
         then
             mv "${HOME_DIR}/.gnupg/gpg.conf" "${BACKUP_DIR}/gpg.conf"
         else
             su -c mkdir -p "${HOME_DIR}/.gnupg/" "${SUDO_USER}"
+            # do this as user, not root, to preserve ownership and priviliges
         fi
-        
+
         # install new gpg.conf
         if [ -e "${ETC_DIR}/gpg.conf" ]
         then
@@ -29,6 +30,67 @@ case "$1" in
             echo "postinst couldn't find gpg.conf"
             exit 1
         fi
+
+        # gnome-keyring-gpg.desktop
+        # *************************
+        # 1. backup existing file
+        # 2. check if X-GNOME-Autostart-enabled=false is already in the file, if
+        #    not, append the line to the file.
+        # 3. if file does not exist, copy it from etc and append necessary line
+        #
+        GPG_FILE="${HOME_DIR}/.config/autostart/gnome-keyring-gpg.desktop"
+        if [ -e "${GPG_FILE}" ]
+        then
+            # 1.
+            cp "${GPG_FILE}" "${BACKUP_DIR}/gnome-keyring-gpg.desktop"
+
+            # 2.
+            grep -n "^X-GNOME-Autostart-enabled=false" -f "${GPG_FILE}" | cut -d ":" -f1 > /dev/null
+            if [ $? ] # not found, therefore append
+                echo "X-GNOME-Autostart-enabled=false" >> "${GPG_FILE}"
+            fi
+        else
+            # make sure the folder exists
+            # do this as user, not root, to preserve ownership and priviliges
+            su -c mkdir -p "${HOME_DIR}/.config/autostart" "${SUDO_USER}"
+
+            # copy file from etc
+            su -c cp '"/etc/xdg/autostart/gnome-keyring-gpg.desktop" "${GPG_FILE}"' "${SUDO_USER}"
+
+            # append taming command
+            echo "X-GNOME-Autostart-enabled=false" >> "${GPG_FILE}"
+        fi
+
+        # gnome-keyring-ssh.desktop
+        # *************************
+        # 1. backup existing file
+        # 2. check if X-GNOME-Autostart-enabled=false is already in the file, if
+        #    not, append the line to the file.
+        # 3. if file does not exist, copy it from etc and append necessary line
+        #
+        SSH_FILE="${HOME_DIR}/.config/autostart/gnome-keyring-ssh.desktop"
+        if [ -e "${SSH_FILE}" ]
+        then
+            # 1.
+            cp "${SSH_FILE}" "${BACKUP_DIR}/gnome-keyring-gpg.desktop"
+
+            # 2.
+            grep -n "^X-GNOME-Autostart-enabled=false" -f "${SSH_FILE}" | cut -d ":" -f1 > /dev/null
+            if [ $? ] # not found, therefore append
+                echo "X-GNOME-Autostart-enabled=false" >> "${SSH_FILE}"
+            fi
+        else
+            # make sure the folder exists
+            # do this as user, not root, to preserve ownership and priviliges
+            su -c mkdir -p "${HOME_DIR}/.config/autostart" "${SUDO_USER}"
+
+            # copy file from etc
+            su -c cp '"/etc/xdg/autostart/gnome-keyring-gpg.desktop" "${SSH_FILE}"' "${SUDO_USER}"
+
+            # append taming command
+            echo "X-GNOME-Autostart-enabled=false" >> "${SSH_FILE}"
+        fi
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

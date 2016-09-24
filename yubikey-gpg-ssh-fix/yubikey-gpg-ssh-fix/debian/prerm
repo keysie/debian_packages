@@ -6,38 +6,60 @@ BACKUP_DIR="${ETC_DIR}/backup"
 
 case "$1" in
     remove|upgrade|deconfigure)
-    
+
+        # remove git ppa
+        add-apt-repository -ry ppa:git-core/ppa
+
         # check if backup directory exists
         if [ ! -d "${BACKUP_DIR}" ]
         then
             exit 1
         fi
-        
-        # try to restore backuped gpg.conf for every user
+
+        # try to restore backuped files for every user
         for D in `find "${BACKUP_DIR}/" -type d`
         do
+            # extract user names from folder names
+            USER=`echo "${D}" | rev | cut -d "/" -f1 | rev`
+            echo "restoring backuped files for ${USER}"
+
+            # restore gpg.conf
             if [ -e "${D}/gpg.conf" ]
             then
-                # extract user names from folder names
-                echo "${D}"
-                USER=`echo "${D}" | rev | cut -d "/" -f1 | rev`
-                echo "${USER}"
-                
                 # make sure .gnupg exists
                 if [ ! -d "/home/${USER}/.gnupg/" ]
                 then
-                    mkdir -p "/home/${USER}/.gnupg/"
-                    chown -R "${USER}:${USER}" "/home/${USER}/.gnupg/"
+                    su -c 'mkdir -p "/home/${USER}/.gnupg/"' "${USER}"
+                    # TODO: delete chown -R "${USER}:${USER}" "/home/${USER}/.gnupg/"
                 fi
-                
+
                 # move backuped file back
-                mv "${D}/gpg.conf" "/home/${USER}/.gnupg/gpg.conf"
-                chown "${USER}:${USER}" "/home/${USER}/.gnupg/gpg.conf"
+                su -c 'mv "${D}/gpg.conf" "/home/${USER}/.gnupg/gpg.conf"' "${USER}"
+                # TODO: delete chown "${USER}:${USER}" "/home/${USER}/.gnupg/gpg.conf"
                 chmod 600 "/home/${USER}/.gnupg/gpg.conf"
-                
-                # delete folder, so autoremove doesn't complain
-                rm -rf "${D}"
             fi
+
+            # restore gnome-keyring-gpg.desktop
+            if [ -e "${D}/gnome-keyring-gpg.desktop" ]
+            then
+                # make sure targed directory exists
+                if [ ! -d "/home/${USER}/.config/autostart" ]
+                then
+                    su -c 'mkdir -p "/home/${USER}/.config/autostart"' "${USER}"
+                    # TODO: delete chown -R "${USER}:${USER}" "/home/${USER}/.gnupg/"
+                fi
+
+                # move backuped file back
+                su -c 'mv "${D}/gnome-keyring-gpg.desktop" \
+                    "/home/${USER}/.config/autostart/gnome-keyring-gpg.desktop"' \
+                    "${USER}"
+                # TODO: delete chown "${USER}:${USER}" "/home/${USER}/.gnupg/gpg.conf"
+                chmod 600 "/home/${USER}/.config/autostart/gnome-keyring-gpg.desktop"
+            fi
+
+            # delete folder, so autoremove doesn't complain
+            rm -rf "${D}"
+
         done
     ;;
 

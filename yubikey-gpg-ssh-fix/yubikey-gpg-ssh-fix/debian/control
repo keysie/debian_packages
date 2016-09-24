@@ -8,7 +8,7 @@ Standards-Version: 3.9.4
 
 Package: yubikey-gpg-ssh-fix
 Architecture: all
-Depends: pcscd, scdaemon, pcsc-tools, gnupg2, gnupg-curl, openssl, parcimonie
+Depends: pcscd, scdaemon, pcsc-tools, gnupg2, gnupg-curl, openssl, parcimonie, git
 Description: Use Yubikey NEO for GPG and SSH
  Tames the GNOME-keyring and enables you to use your Yubikey NEO for GPG
  and SSH authentication.

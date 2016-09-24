@@ -7,7 +7,7 @@ BACKUP_DIR="${ETC_DIR}/backup/${SUDO_USER}"
 
 case "$1" in
     install|upgrade)
-        
+
     ;;
 
     abort-upgrade)
