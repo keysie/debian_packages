@@ -20,42 +20,68 @@ case "$1" in
         for D in `find "${BACKUP_DIR}/" -type d`
         do
             # extract user names from folder names
-            USER=`echo "${D}" | rev | cut -d "/" -f1 | rev`
-            echo "restoring backuped files for ${USER}"
+            BACKUPING_USER=`echo "${D}" | rev | cut -d "/" -f1 | rev`
+            if [ "${BACKUPING_USER}" == "" ] || [ -z "$(getent passwd ${BACKUPING_USER})" ]
+            then
+                continue
+            fi
+
+            echo "restoring backuped files for ${BACKUPING_USER}"
 
             # restore gpg.conf
             if [ -e "${D}/gpg.conf" ]
             then
                 # make sure .gnupg exists
-                if [ ! -d "/home/${USER}/.gnupg/" ]
+                if [ ! -d "/home/${BACKUPING_USER}/.gnupg/" ]
                 then
-                    su -c 'mkdir -p "/home/${USER}/.gnupg/"' "${USER}"
-                    # TODO: delete chown -R "${USER}:${USER}" "/home/${USER}/.gnupg/"
+                    su -c "mkdir -p /home/${BACKUPING_USER}/.gnupg/" "${BACKUPING_USER}"
                 fi
 
-                # move backuped file back
-                su -c 'mv "${D}/gpg.conf" "/home/${USER}/.gnupg/gpg.conf"' "${USER}"
-                # TODO: delete chown "${USER}:${USER}" "/home/${USER}/.gnupg/gpg.conf"
-                chmod 600 "/home/${USER}/.gnupg/gpg.conf"
+                # move backuped file back and remove backup
+                chown "${BACKUPING_USER}:${BACKUPING_USER}" "${D}/gpg.conf"
+                chmod "600" "${D}/gpg.conf"
+                su -c "cp ${D}/gpg.conf /home/${BACKUPING_USER}/.gnupg/gpg.conf" "${BACKUPING_USER}"
+                rm -f "${D}/gpg.conf"
             fi
 
             # restore gnome-keyring-gpg.desktop
             if [ -e "${D}/gnome-keyring-gpg.desktop" ]
             then
                 # make sure targed directory exists
-                if [ ! -d "/home/${USER}/.config/autostart" ]
+                if [ ! -d "/home/${BACKUPING_USER}/.config/autostart" ]
                 then
-                    su -c 'mkdir -p "/home/${USER}/.config/autostart"' "${USER}"
-                    # TODO: delete chown -R "${USER}:${USER}" "/home/${USER}/.gnupg/"
+                    su -c "mkdir -p /home/${BACKUPING_USER}/.config/autostart" "${BACKUPING_USER}"
                 fi
 
-                # move backuped file back
-                su -c 'mv "${D}/gnome-keyring-gpg.desktop" \
-                    "/home/${USER}/.config/autostart/gnome-keyring-gpg.desktop"' \
-                    "${USER}"
-                # TODO: delete chown "${USER}:${USER}" "/home/${USER}/.gnupg/gpg.conf"
-                chmod 600 "/home/${USER}/.config/autostart/gnome-keyring-gpg.desktop"
+                # move backuped file back and remove backup
+                chown "${BACKUPING_USER}:${BACKUPING_USER}" "${D}/gnome-keyring-gpg.desktop"
+                chmod "644" "${D}/gnome-keyring-gpg.desktop"
+                su -c "cp ${D}/gnome-keyring-gpg.desktop \
+                    /home/${BACKUPING_USER}/.config/autostart/gnome-keyring-gpg.desktop" \
+                    "${BACKUPING_USER}"
+                rm -f "${D}/gnome-keyring-gpg.desktop"
             fi
+
+            # restore gnome-keyring-gpg.desktop
+            if [ -e "${D}/gnome-keyring-ssh.desktop" ]
+            then
+                # make sure targed directory exists
+                if [ ! -d "/home/${BACKUPING_USER}/.config/autostart" ]
+                then
+                    su -c "mkdir -p /home/${BACKUPING_USER}/.config/autostart" "${BACKUPING_USER}"
+                fi
+
+                # move backuped file back and remove backup
+                chown "${BACKUPING_USER}:${BACKUPING_USER}" "${D}/gnome-keyring-ssh.desktop"
+                chmod "644" "${D}/gnome-keyring-ssh.desktop"
+                su -c "cp ${D}/gnome-keyring-ssh.desktop \
+                    /home/${BACKUPING_USER}/.config/autostart/gnome-keyring-ssh.desktop" \
+                    "${BACKUPING_USER}"
+                rm -f "${D}/gnome-keyring-ssh.desktop"
+            fi
+
+            # delete USER variable
+            unset BACKUPING_USER
 
             # delete folder, so autoremove doesn't complain
             rm -rf "${D}"
