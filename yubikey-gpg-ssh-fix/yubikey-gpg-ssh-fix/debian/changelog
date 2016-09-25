@@ -1,3 +1,11 @@
+yubikey-gpg-ssh-fix (0.0.1-3) trusty; urgency=medium
+
+  * gnome-keyring-gpg/ssh.desktop backup/replace/restore working
+  * gpg.conf backup/replace/restore working
+  * ppa dependency to git-core/ppa added
+
+ -- Robert Simpson (Keysie) <robert_zwilling@web.de>  Sun, 25 Sep 2016 22:14:25 +0200
+
 yubikey-gpg-ssh-fix (0.0.1-2) trusty; urgency=medium
 
   * Adds echoing to scripts.
