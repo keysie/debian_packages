@@ -4,19 +4,27 @@ set -e
 ETC_DIR="/etc/yubikey-gpg-ssh-fix"
 BACKUP_DIR="${ETC_DIR}/backup"
 
+# Verbose or non-verbose
+function non_essential_echo {
+    echo "$1"
+}
+
 case "$1" in
     remove|upgrade|deconfigure)
 
         # remove git ppa
+        non_essential_echo "removing git ppa"
         add-apt-repository -ry ppa:git-core/ppa
 
         # check if backup directory exists
+        non_essential_echo "checking backup directory"
         if [ ! -d "${BACKUP_DIR}" ]
         then
             exit 1
         fi
 
         # try to restore backuped files for every user
+        non_essential_echo "starting restoring of files"
         for D in `find "${BACKUP_DIR}/" -type d`
         do
             # extract user names from folder names
@@ -26,9 +34,10 @@ case "$1" in
                 continue
             fi
 
-            echo "restoring backuped files for ${BACKUPING_USER}"
+            non_essential_echo "restoring backuped files for ${BACKUPING_USER}"
 
             # restore gpg.conf
+            non_essential_echo "gpg.conf"
             if [ -e "${D}/gpg.conf" ]
             then
                 # make sure .gnupg exists
@@ -45,6 +54,7 @@ case "$1" in
             fi
 
             # restore gnome-keyring-gpg.desktop
+            non_essential_echo "gnome-keyring-gpg"
             if [ -e "${D}/gnome-keyring-gpg.desktop" ]
             then
                 # make sure targed directory exists
@@ -62,7 +72,8 @@ case "$1" in
                 rm -f "${D}/gnome-keyring-gpg.desktop"
             fi
 
-            # restore gnome-keyring-gpg.desktop
+            # restore gnome-keyring-ssh.desktop
+            non_essential_echo "gnome-keyring-ssh"
             if [ -e "${D}/gnome-keyring-ssh.desktop" ]
             then
                 # make sure targed directory exists

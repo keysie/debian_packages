@@ -5,13 +5,20 @@ ETC_DIR="/etc/yubikey-gpg-ssh-fix"
 HOME_DIR="/home/${SUDO_USER}"
 BACKUP_DIR="${ETC_DIR}/backup/${SUDO_USER}"
 
+# Verbose or non-verbose
+function non_essential_echo {
+    echo "$1"
+}
+
 case "$1" in
     configure)
 
         # create backup folder for user
+        non_essential_echo "creating backup folder"
         mkdir -p "${BACKUP_DIR}"
 
         # backup existing gpg.conf (if any)
+        non_essential_echo "creating backup for gpg.conf"
         if [ -e "${HOME_DIR}/.gnupg/gpg.conf" ]
         then
             mv "${HOME_DIR}/.gnupg/gpg.conf" "${BACKUP_DIR}/gpg.conf"
@@ -24,6 +31,7 @@ case "$1" in
         fi
 
         # install new gpg.conf
+        non_essential_echo "installing new gpg.conf"
         if [ -e "${ETC_DIR}/gpg.conf" ]
         then
             cp "${ETC_DIR}/gpg.conf" "${HOME_DIR}/.gnupg/"
@@ -44,19 +52,27 @@ case "$1" in
         GPG_FILE="${HOME_DIR}/.config/autostart/gnome-keyring-gpg.desktop"
         if [ -e "${GPG_FILE}" ]
         then
+            non_essential_echo "gnome-keyring-gpg found"
+
             # 1.
+            non_essential_echo "creating backup"
             cp "${GPG_FILE}" "${BACKUP_DIR}/gnome-keyring-gpg.desktop"
             # make owned by root and unreadable for others
             chown root:root "${BACKUP_DIR}/gnome-keyring-gpg.desktop"
             chmod 400 "${BACKUP_DIR}/gnome-keyring-gpg.desktop"
 
             # 2.
-            LINE=`grep -n "^X-GNOME-Autostart-enabled=false" "${GPG_FILE}" | cut -d ":" -f1`
-            if [ $? ] # not found, therefore append
+            non_essential_echo "looking for taming command"
+            COUNT=`grep "^X-GNOME-Autostart-enabled=false" "${GPG_FILE}"` || COUNT=""
+            if [ "${COUNT}" == "" ] # not found, therefore append
             then
+                non_essential_echo "command not found - appending"
                 echo "X-GNOME-Autostart-enabled=false" >> "${GPG_FILE}"
             fi
         else
+            non_essential_echo "gnome-keyring-gpg not found"
+
+            non_essential_echo "copying original from system folder"
             # make sure the folder exists
             # do this as user, not root, to preserve ownership and priviliges
             su -c "mkdir -p ${HOME_DIR}/.config/autostart" "${SUDO_USER}"
@@ -65,6 +81,7 @@ case "$1" in
             su -c "cp /etc/xdg/autostart/gnome-keyring-gpg.desktop ${GPG_FILE}" "${SUDO_USER}"
 
             # append taming command
+            non_essential_echo "appending command"
             echo "X-GNOME-Autostart-enabled=false" >> "${GPG_FILE}"
         fi
 
@@ -78,19 +95,27 @@ case "$1" in
         SSH_FILE="${HOME_DIR}/.config/autostart/gnome-keyring-ssh.desktop"
         if [ -e "${SSH_FILE}" ]
         then
+            non_essential_echo "gnome-keyring-ssh found"
+
             # 1.
+            non_essential_echo "creating backup"
             cp "${SSH_FILE}" "${BACKUP_DIR}/gnome-keyring-ssh.desktop"
             # make owned by root and unreadable for others
             chown root:root "${BACKUP_DIR}/gnome-keyring-ssh.desktop"
             chmod 400 "${BACKUP_DIR}/gnome-keyring-ssh.desktop"
 
             # 2.
-            LINE=`grep -n "^X-GNOME-Autostart-enabled=false" "${SSH_FILE}" | cut -d ":" -f1`
-            if [ $? ] # not found, therefore append
+            non_essential_echo "looking for taming command"
+            COUNT=`grep "^X-GNOME-Autostart-enabled=false" "${SSH_FILE}"` || COUNT=""
+            if [ "${COUNT}" == "" ] # not found, therefore append
             then
+                echo "command not found - appending"
                 echo "X-GNOME-Autostart-enabled=false" >> "${SSH_FILE}"
             fi
         else
+            non_essential_echo "gnome-keyring-gpg not found"
+
+            non_essential_echo "copying original from system folder"
             # 3.
             # make sure the folder exists
             # do this as user, not root, to preserve ownership and priviliges
@@ -100,6 +125,7 @@ case "$1" in
             su -c "cp /etc/xdg/autostart/gnome-keyring-ssh.desktop ${SSH_FILE}" "${SUDO_USER}"
 
             # append taming command
+            non_essential_echo "appending command"
             echo "X-GNOME-Autostart-enabled=false" >> "${SSH_FILE}"
         fi
 
